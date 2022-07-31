@@ -23,7 +23,7 @@ public class ItemController {
     private Mapper mapper;
 
     @Autowired
-    public ItemController (ItemStorage itemStorage, ItemService itemService, Mapper mapper) {
+    public ItemController(ItemStorage itemStorage, ItemService itemService, Mapper mapper) {
         this.itemStorage = itemStorage;
         this.itemService = itemService;
         this.mapper = mapper;

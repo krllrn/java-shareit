@@ -39,7 +39,7 @@ public class ItemInMemoryStorage implements ItemStorage {
 
     @Override
     public Item addItem(long userId, Item item) {
-        item.setId(itemsCount+1);
+        item.setId(itemsCount + 1);
         items.put(item.getId(), item);
         itemsCount++;
         return items.get(item.getId());

@@ -22,7 +22,7 @@ public class UserInMemoryStorage implements UserStorage {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Duplicate email");
             }
         }
-        user.setId(userCount+1);
+        user.setId(userCount + 1);
         users.put(user.getId(), user);
         userCount++;
         return user;
