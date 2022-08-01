@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserStorage;
+import ru.practicum.shareit.user.dto.UserDto;
 
 @Component
 public class Mapper {
@@ -27,5 +29,13 @@ public class Mapper {
         Item item = modelMapper.map(itemDto, Item.class);
         item.setOwner(userStorage.getUserById(id));
         return item;
+    }
+
+    public UserDto userToDto(User user) {
+        return modelMapper.map(user, UserDto.class);
+    }
+
+    public User userToEntity(UserDto userDto) {
+        return modelMapper.map(userDto, User.class);
     }
 }

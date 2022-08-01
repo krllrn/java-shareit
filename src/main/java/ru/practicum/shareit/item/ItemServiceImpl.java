@@ -10,7 +10,7 @@ import java.util.List;
 @Service
 public class ItemServiceImpl implements ItemService {
 
-    private ItemStorage itemStorage;
+    private final ItemStorage itemStorage;
 
     @Autowired
     ItemServiceImpl(ItemStorage itemStorage) {

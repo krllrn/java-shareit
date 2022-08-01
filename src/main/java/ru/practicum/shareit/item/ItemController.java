@@ -18,9 +18,9 @@ import java.util.stream.Collectors;
 @RequestMapping("/items")
 public class ItemController {
 
-    private ItemStorage itemStorage;
-    private ItemService itemService;
-    private Mapper mapper;
+    private final ItemStorage itemStorage;
+    private final ItemService itemService;
+    private final Mapper mapper;
 
     @Autowired
     public ItemController(ItemStorage itemStorage, ItemService itemService, Mapper mapper) {

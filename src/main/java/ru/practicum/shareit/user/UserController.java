@@ -1,21 +1,25 @@
 package ru.practicum.shareit.user;
 
-import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ru.practicum.shareit.mapper.Mapper;
+import ru.practicum.shareit.user.dto.UserDto;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    UserStorage userStorage;
+    private final UserStorage userStorage;
+    private final Mapper mapper;
 
     @Autowired
-    public UserController(UserStorage userStorage) {
+    public UserController(UserStorage userStorage, Mapper mapper) {
         this.userStorage = userStorage;
+        this.mapper = mapper;
     }
 
     @GetMapping
@@ -32,22 +36,16 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
-        if (user.getEmail() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email not specified");
-        }
-        if (!EmailValidator.getInstance().isValid(user.getEmail())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email not valid");
-        }
-        return userStorage.create(user);
+    public User create(@Valid @RequestBody UserDto userDto) {
+        return userStorage.create(mapper.userToEntity(userDto));
     }
 
     @PatchMapping("/{id}")
-    public User updateValues(@PathVariable long id, @RequestBody User user) {
+    public User updateValues(@PathVariable long id, @RequestBody UserDto userDto) {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        return userStorage.update(id, user);
+        return userStorage.update(id, mapper.userToEntity(userDto));
     }
 
     @DeleteMapping("/{id}")
