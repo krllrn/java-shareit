@@ -1,10 +1,13 @@
 package ru.practicum.shareit.item;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.mapper.Mapper;
+import ru.practicum.shareit.user.UserStorage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
