@@ -4,25 +4,31 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
     private final UserStorage userStorage;
+    private final Mapper mapper;
 
     @Autowired
-    public UserController(UserStorage userStorage) {
+    public UserController(UserStorage userStorage, Mapper mapper) {
         this.userStorage = userStorage;
+        this.mapper = mapper;
     }
 
     @GetMapping
     public List<UserDto> getAll() {
-        return userStorage.getUsers();
+        return userStorage.getUsers().stream()
+                .map(user -> mapper.userToDto(user))
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
@@ -30,12 +36,12 @@ public class UserController {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        return userStorage.getUserById(id);
+        return mapper.userToDto(userStorage.getUserById(id));
     }
 
     @PostMapping
     public UserDto create(@Valid @RequestBody UserDto userDto) {
-        return userStorage.create(userDto);
+        return mapper.userToDto(userStorage.create(mapper.userToEntity(userDto)));
     }
 
     @PatchMapping("/{id}")
@@ -43,7 +49,7 @@ public class UserController {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        return userStorage.update(id, userDto);
+        return mapper.userToDto(userStorage.update(id, mapper.userToEntity(userDto)));
     }
 
     @DeleteMapping("/{id}")

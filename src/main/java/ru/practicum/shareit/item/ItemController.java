@@ -5,7 +5,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.mapper.Mapper;
 
 import javax.validation.Valid;
@@ -34,11 +33,9 @@ public class ItemController {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID. Only owner have access");
         }
-        List<Item> itemList = itemStorage.getItems(Long.parseLong(userId));
-        List<ItemDto> itemDtoList = itemList.stream()
+        return itemStorage.getItems(Long.parseLong(userId)).stream()
                 .map(item -> mapper.itemToDto(item))
                 .collect(Collectors.toList());
-        return itemDtoList;
     }
 
     @GetMapping("/{itemId}")
@@ -58,8 +55,7 @@ public class ItemController {
 
     @PostMapping
     public ItemDto addItem(@RequestHeader("X-Sharer-User-Id") long userId, @Valid @RequestBody ItemDto itemDto) {
-        Item toEntity = mapper.itemToEntity(userId, itemDto);
-        return mapper.itemToDto(itemStorage.addItem(userId, toEntity));
+        return mapper.itemToDto(itemStorage.addItem(userId, mapper.itemToEntity(userId, itemDto)));
     }
 
     @PatchMapping("/{itemId}")

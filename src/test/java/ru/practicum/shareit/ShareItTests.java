@@ -70,7 +70,7 @@ class ShareItTests {
 	}
 
 	@Test
-	public void testReturnAll() {
+	public void testReturnAllUsers() {
 		userStorage.create(user1);
 		userStorage.create(user2);
 
@@ -134,7 +134,7 @@ class ShareItTests {
 	@Test
 	public void testEditItem() {
 		userStorage.create(user1);
-		Item toEdit = itemStorage.addItem(user1.getId(), mapper.itemToEntity(user1.getId(), itemDto1));
+		Item toEdit = itemStorage.addItem(1, mapper.itemToEntity(user1.getId(), itemDto1));
 
 		Optional<Item> itemOptional = Optional.ofNullable(itemStorage.edit(toEdit.getId(), user1.getId(), itemDto2));
 
