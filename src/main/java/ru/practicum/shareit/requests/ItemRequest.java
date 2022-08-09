@@ -1,7 +1,8 @@
 package ru.practicum.shareit.requests;
 
-/**
- * // TODO .
- */
+import lombok.Data;
+
+@Data
 public class ItemRequest {
+    String request;
 }
