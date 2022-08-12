@@ -10,17 +10,17 @@ import java.util.List;
 @Service
 public class ItemServiceImpl implements ItemService {
 
-    private final ItemStorage itemStorage;
+    private final ItemRepository itemRepository;
 
     @Autowired
-    ItemServiceImpl(ItemStorage itemStorage) {
-        this.itemStorage = itemStorage;
+    ItemServiceImpl(ItemRepository itemRepository) {
+        this.itemRepository = itemRepository;
     }
 
     @Override
     public List<Item> search(String text) {
         List<Item> searchedItems = new ArrayList<>();
-        for (Item i : itemStorage.getAllItems()) {
+        for (Item i : itemRepository.findAll()) {
             if ((i.getName().toLowerCase().contains(text) || i.getDescription().toLowerCase().contains(text)) && i.getAvailable()) {
                 searchedItems.add(i);
             }

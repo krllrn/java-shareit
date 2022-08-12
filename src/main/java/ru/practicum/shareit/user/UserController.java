@@ -7,27 +7,31 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import javax.persistence.EntityNotFoundException;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
-    private final UserStorage userStorage;
+    private final UserRepository userRepository;
     private final Mapper mapper;
 
     @Autowired
-    public UserController(UserStorage userStorage, Mapper mapper) {
-        this.userStorage = userStorage;
+    public UserController(UserRepository userRepository, Mapper mapper) {
+        this.userRepository = userRepository;
         this.mapper = mapper;
     }
 
     @GetMapping
     public List<UserDto> getAll() {
-        return userStorage.getUsers().stream()
-                .map(user -> mapper.userToDto(user))
+        return userRepository.findAll().stream()
+                .map(mapper::userToDto)
                 .collect(Collectors.toList());
     }
 
@@ -36,20 +40,21 @@ public class UserController {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        return mapper.userToDto(userStorage.getUserById(id));
+        return mapper.userToDto(userRepository.getReferenceById(id));
     }
 
     @PostMapping
-    public UserDto create(@Valid @RequestBody UserDto userDto) {
-        return mapper.userToDto(userStorage.create(mapper.userToEntity(userDto)));
+    public UserDto create(@PathVariable (required = false) Long id,
+                          @Valid @RequestBody UserDto userDto) {
+        return mapper.userToDto(userRepository.save(mapper.userToEntity(id, userDto)));
     }
 
     @PatchMapping("/{id}")
-    public UserDto updateValues(@PathVariable long id, @RequestBody UserDto userDto) {
+    public UserDto updateValues(@PathVariable Long id, @RequestBody UserDto userDto) {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        return mapper.userToDto(userStorage.update(id, mapper.userToEntity(userDto)));
+        return mapper.userToDto(userRepository.save(mapper.userToEntity(id, userDto)));
     }
 
     @DeleteMapping("/{id}")
@@ -57,6 +62,11 @@ public class UserController {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        userStorage.delete(id);
+        userRepository.delete(userRepository.getReferenceById(id));
+    }
+
+    @ExceptionHandler({EntityNotFoundException.class})
+    void handleEntityNotFound(HttpServletResponse response) throws IOException {
+        response.sendError(HttpStatus.NOT_FOUND.value());
     }
 }
