@@ -26,4 +26,8 @@ public class User {
         this.email = email;
         this.name = name;
     }
+
+    public User(long id) {
+        this.id = id;
+    }
 }

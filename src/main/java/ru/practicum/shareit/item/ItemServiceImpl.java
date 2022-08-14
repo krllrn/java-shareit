@@ -2,8 +2,11 @@ package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,10 +14,14 @@ import java.util.List;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
+    private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
 
     @Autowired
-    ItemServiceImpl(ItemRepository itemRepository) {
+    ItemServiceImpl(ItemRepository itemRepository, CommentRepository commentRepository, UserRepository userRepository) {
         this.itemRepository = itemRepository;
+        this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
     }
 
     @Override
@@ -26,5 +33,16 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         return searchedItems;
+    }
+
+    @Override
+    public Item addComment(Long itemId, Long userId, Comment comment) {
+        Item item = itemRepository.findAllByIdContaining(itemId);
+        comment.setItemId(itemId);
+        comment.setAuthorName(userRepository.findByIdContaining(userId).getName());
+        comment.setCreated(LocalDateTime.now());
+        commentRepository.save(comment);
+        item.setComment(comment);
+        return item;
     }
 }

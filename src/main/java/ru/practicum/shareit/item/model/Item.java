@@ -1,18 +1,19 @@
 package ru.practicum.shareit.item.model;
 
 import lombok.*;
+import org.hibernate.Hibernate;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
+import java.util.Objects;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode
 @ToString
 @Entity
-@Table(name = "Items")
+@Table(name = "items")
 public class Item {
 
     @Id
@@ -26,4 +27,27 @@ public class Item {
     private String name;
     private String description;
     private Boolean available;
+
+    @ToString.Exclude
+    @ManyToOne
+    @JoinColumn(name = "comment_id")
+    private Comment comment;
+
+    public Item(long id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || Hibernate.getClass(this) != Hibernate.getClass(o)) return false;
+        Item item = (Item) o;
+        return Objects.equals(id, item.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

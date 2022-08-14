@@ -1,10 +1,13 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.*;
+import ru.practicum.shareit.booking.dto.BookingShort;
+import ru.practicum.shareit.item.model.Comment;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 @Getter
 @Setter
@@ -12,7 +15,6 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-@Builder
 public class ItemDto {
     private long id;
 
@@ -28,6 +30,12 @@ public class ItemDto {
 
     @NotNull
     private Boolean available;
+
+    private BookingShort lastBooking;
+
+    private BookingShort nextBooking;
+
+    private List<Comment> comments;
 
     public ItemDto(String name, String description, Boolean available) {
         this.name = name;
