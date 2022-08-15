@@ -30,7 +30,8 @@ public class BookingController {
     private final Mapper mapper;
 
     @Autowired
-    public BookingController(BookingRepository bookingRepository, UserRepository userRepository, ItemRepository itemRepository, Mapper mapper) {
+    public BookingController(BookingRepository bookingRepository, UserRepository userRepository,
+                             ItemRepository itemRepository, Mapper mapper) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
@@ -39,13 +40,14 @@ public class BookingController {
 
     //Добавление нового запроса на бронирование.
     @PostMapping
-    public BookingDto addBooking(@RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody BookingDto bookingDto) {
-        checkUser(userId);
-        if (itemRepository.findAllByIdContaining(bookingDto.getItem().getId()) == null) {
+    public BookingDto addBooking(@RequestHeader("X-Sharer-User-Id") Long bookerId,
+                                 @Valid @RequestBody BookingDto bookingDto) {
+        checkUser(bookerId);
+        if (itemRepository.findByIdIs(bookingDto.getItem().getId()) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found!");
         }
         bookingDto.setStatus(BookingState.WAITING);
-        return mapper.bookingToDto(bookingRepository.save(mapper.bookingDtoToEntity(bookingDto, userId)));
+        return mapper.bookingToDto(bookingRepository.save(mapper.bookingDtoToEntity(bookingDto, bookerId)));
     }
 
     //Подтверждение или отклонение запроса на бронирование.
@@ -56,7 +58,7 @@ public class BookingController {
         // Затем статус бронирования становится либо APPROVED, либо REJECTED.
         // Параметр approved может принимать значения true или false
         checkUser(userId);
-        Booking booking = bookingRepository.findByIdContaining(bookingId);
+        Booking booking = bookingRepository.findByIdIs(bookingId);
         if (booking.getItemOwnerId() != userId) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Only owner have access.");
         }
@@ -76,17 +78,18 @@ public class BookingController {
 
     //Получение данных о конкретном бронировании (включая его статус).
     @GetMapping("/{bookingId}")
-    public BookingDto getInfoAboutBooking(@RequestHeader("X-Sharer-User-Id") Long userId, @PathVariable Long bookingId) {
+    public BookingDto getInfoAboutBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
+                                          @PathVariable Long bookingId) {
          //Может быть выполнено либо автором бронирования,
         //либо владельцем вещи, к которой относится бронирование.
         checkUser(userId);
-        if (bookingRepository.findByIdContaining(bookingId) == null) {
+        if (bookingRepository.findByIdIs(bookingId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found!");
         }
-        Booking booking = bookingRepository.findByIdContaining(bookingId);
+        Booking booking = bookingRepository.findByIdIs(bookingId);
         long bookerId = booking.getBooker().getId();
         long ownerId = booking.getItemOwnerId();
-        if (!(bookerId == userId.longValue() || ownerId == userId)) {
+        if (!(bookerId == userId || ownerId == userId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Only owner or booker have access");
         }
         return mapper.bookingToDto(booking);
@@ -133,7 +136,8 @@ public class BookingController {
 
     //Получение списка бронирований для всех вещей текущего пользователя.
     @GetMapping("/owner")
-    public List<BookingDto> getBookingsForUserItems(@RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
+    public List<BookingDto> getBookingsForUserItems(
+            @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
                                                @RequestHeader("X-Sharer-User-Id") Long userId) {
         //Этот запрос имеет смысл для владельца хотя бы одной вещи.
         checkUser(userId);
@@ -176,7 +180,7 @@ public class BookingController {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID.");
         }
-        if (userRepository.findByIdContaining(userId) == null) {
+        if (userRepository.findByIdIs(userId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
         }
     }

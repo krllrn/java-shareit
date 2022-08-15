@@ -37,9 +37,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item addComment(Long itemId, Long userId, Comment comment) {
-        Item item = itemRepository.findAllByIdContaining(itemId);
+        Item item = itemRepository.findByIdIs(itemId);
         comment.setItemId(itemId);
-        comment.setAuthorName(userRepository.findByIdContaining(userId).getName());
+        comment.setAuthorName(userRepository.findByIdIs(userId).getName());
         comment.setCreated(LocalDateTime.now());
         commentRepository.save(comment);
         item.setComment(comment);

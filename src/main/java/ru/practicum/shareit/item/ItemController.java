@@ -22,7 +22,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-
 @RestController
 @RequestMapping("/items")
 public class ItemController {
@@ -34,7 +33,8 @@ public class ItemController {
     private final Mapper mapper;
 
     @Autowired
-    public ItemController(ItemRepository itemRepository, UserRepository userRepository, BookingRepository bookingRepository, ItemService itemService, Mapper mapper) {
+    public ItemController(ItemRepository itemRepository, UserRepository userRepository,
+                          BookingRepository bookingRepository, ItemService itemService, Mapper mapper) {
         this.itemRepository = itemRepository;
         this.userRepository = userRepository;
         this.bookingRepository = bookingRepository;
@@ -54,10 +54,13 @@ public class ItemController {
 
     @GetMapping("/{itemId}")
     public ItemDto getItemById(@PathVariable long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        if (userId != itemRepository.getReferenceById(itemId).getOwner().getId()) {
-            return mapper.itemToDtoWoBookings(itemRepository.getReferenceById(itemId));
+        if (itemRepository.findByIdIs(itemId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found.");
         }
-        return mapper.itemToDto(itemRepository.getReferenceById(itemId));
+        if (userId != itemRepository.findByIdIs(itemId).getOwner().getId()) {
+            return mapper.itemToDtoWoBookings(itemRepository.findByIdIs(itemId));
+        }
+        return mapper.itemToDto(itemRepository.findByIdIs(itemId));
     }
 
     @GetMapping("/search")
@@ -76,7 +79,7 @@ public class ItemController {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID. Only owner have access");
         }
-        if (userRepository.findByIdContaining(userId) == null) {
+        if (userRepository.findByIdIs(userId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
         }
         return mapper.itemToDto(itemRepository.save(mapper.itemToEntity(userId, itemDto, itemId)));
@@ -88,7 +91,7 @@ public class ItemController {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID. Only owner have access");
         }
-        if (userRepository.findByIdContaining(userId) == null) {
+        if (userRepository.findByIdIs(userId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
         }
         return mapper.itemToDto(itemRepository.save(mapper.itemToEntity(userId, itemDto, itemId)));

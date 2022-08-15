@@ -70,9 +70,9 @@ public class Mapper {
         Item item;
         if (itemId == null) {
             item = modelMapper.map(itemDto, Item.class);
-            item.setOwner(userRepository.getReferenceById(userId));
+            item.setOwner(userRepository.findByIdIs(userId));
         } else {
-            item = itemRepository.getReferenceById(itemId);
+            item = itemRepository.findByIdIs(itemId);
             if (item.getOwner().getId() != userId) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "The server understood the request but " +
                         "refuses to authorize it");
@@ -91,9 +91,16 @@ public class Mapper {
         return item;
     }
 
+    public ItemShort itemToShort(Item item) {
+        return modelMapper.map(item, ItemShort.class);
+    }
+
     // ---------------- USER ------------------------------------------------------------
 
     public UserDto userToDto(User user) {
+        if (user == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+        }
         return modelMapper.map(user, UserDto.class);
     }
 
@@ -101,7 +108,7 @@ public class Mapper {
         if (id == null) {
             return modelMapper.map(userDto, User.class);
         } else {
-            User userToUpdate = userRepository.getReferenceById(id);
+            User userToUpdate = userRepository.findByIdIs(id);
             if (userDto.getEmail() != null) {
                 userToUpdate.setEmail(userDto.getEmail());
             }
@@ -121,20 +128,20 @@ public class Mapper {
         return bookingDto;
     }
 
-    public Booking bookingDtoToEntity(BookingDto bookingDto, Long userId) {
+    public Booking bookingDtoToEntity(BookingDto bookingDto, Long bookerId) {
         Booking booking = modelMapper.map(bookingDto, Booking.class);
-        Item item = itemRepository.findAllByIdContaining((bookingDto.getItem().getId()));
-        if (userId == item.getOwner().getId()) {
+        Item item = itemRepository.findByIdIs(bookingDto.getItem().getId());
+        if (bookerId == item.getOwner().getId()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "OWNER and BOOKER equals");
         }
-        if (userRepository.findByIdContaining(userId) != null) {
-            booking.setBooker(userRepository.getReferenceById(userId));
+        if (userRepository.findByIdIs(bookerId) != null) {
+            booking.setBooker(userRepository.findByIdIs(bookerId));
         }
         if (item != null) {
             booking.setItem(item);
             booking.setItemOwnerId(item.getOwner().getId());
         }
-        if (!itemRepository.findAllByIdContaining(booking.getItem().getId()).getAvailable()) {
+        if (!itemRepository.findByIdIs(booking.getItem().getId()).getAvailable()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item isn't available!");
         }
         return booking;

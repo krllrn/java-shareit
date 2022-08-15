@@ -1,17 +1,23 @@
-/*
 package ru.practicum.shareit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import ru.practicum.shareit.item.ItemStorage;
+import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.BookingState;
+import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserStorage;
+import ru.practicum.shareit.user.UserRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,21 +25,25 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 class ShareItTests {
-	private final UserStorage userStorage;
-	private final ItemStorage itemStorage;
+	private final UserRepository userStorage;
+	private final ItemRepository itemStorage;
+	private final BookingRepository bookingRepository;
+	private final ItemService itemService;
 	private final Mapper mapper;
 
 	@Autowired
-	ShareItTests(UserStorage userStorage, ItemStorage itemStorage, Mapper mapper) {
+	ShareItTests(UserRepository userStorage, ItemRepository itemStorage, BookingRepository bookingRepository, ItemService itemService, Mapper mapper) {
 		this.userStorage = userStorage;
 		this.itemStorage = itemStorage;
+		this.bookingRepository = bookingRepository;
+		this.itemService = itemService;
 		this.mapper = mapper;
 	}
 
 	private final User user1 = new User("test@test.ru", "Test1");
 	private final User user2 = new User("test2@test2.ru", "Test2");
 	private final ItemDto itemDto1 = new ItemDto("Test item1", "Loooooooong description1", true);
-	private final ItemDto itemDto2 = new ItemDto("Test item2", "Loooooooong description2", false);
+	private final ItemDto itemDto2 = new ItemDto("Test item2", "Loooooooong description2", true);
 
 	@BeforeEach
 	public void clear() {
@@ -43,7 +53,7 @@ class ShareItTests {
 
 	@Test
 	public void testCreateUser() {
-		Optional<User> userOptional = Optional.ofNullable(userStorage.create(user1));
+		Optional<User> userOptional = Optional.of(userStorage.save(user1));
 
 		assertThat(userOptional)
 				.isPresent()
@@ -57,8 +67,8 @@ class ShareItTests {
 
 	@Test
 	public void testGetUserById() {
-		userStorage.create(user1);
-		Optional<User> userOptionalT = Optional.ofNullable(userStorage.getUserById(user1.getId()));
+		userStorage.save(user1);
+		Optional<User> userOptionalT = Optional.ofNullable(userStorage.findByIdIs(user1.getId()));
 
 		assertThat(userOptionalT)
 				.isPresent()
@@ -72,17 +82,18 @@ class ShareItTests {
 
 	@Test
 	public void testReturnAllUsers() {
-		userStorage.create(user1);
-		userStorage.create(user2);
+		userStorage.save(user1);
+		userStorage.save(user2);
 
-		assertEquals(2, userStorage.getUsers().size());
+		assertEquals(2, userStorage.findAll().size());
 	}
 
 	@Test
 	public void testUpdateUser() {
-		userStorage.create(user1);
-		userStorage.update(user1.getId(), user2);
-		Optional<User> userOptional = Optional.ofNullable(userStorage.getUserById(user1.getId()));
+		userStorage.save(user1);
+		user2.setId(user1.getId());
+		userStorage.save(user2);
+		Optional<User> userOptional = Optional.ofNullable(userStorage.findByIdIs(user1.getId()));
 
 		assertThat(userOptional)
 				.isPresent()
@@ -96,31 +107,31 @@ class ShareItTests {
 
 	@Test
 	public void testDeleteUserById() {
-		userStorage.create(user1);
-		userStorage.create(user2);
-		userStorage.delete(user1.getId());
+		userStorage.save(user1);
+		userStorage.save(user2);
+		userStorage.delete(user1);
 
-		assertEquals(1, userStorage.getUsers().size());
+		assertEquals(1, userStorage.findAll().size());
 	}
 
 	// ~~~~~~~~~~~~~~~ ITEMS ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 	@Test
 	public void testGetItems() {
-		userStorage.create(user1);
-		itemStorage.addItem(user1.getId(), mapper.itemToEntity(user1.getId(), itemDto1));
-		itemStorage.addItem(user1.getId(), mapper.itemToEntity(user1.getId(), itemDto2));
+		userStorage.save(user1);
+		itemStorage.save(mapper.itemToEntity(user1.getId(), itemDto1, null));
+		itemStorage.save(mapper.itemToEntity(user1.getId(), itemDto2, null));
 
-		assertEquals(2, itemStorage.getItems(user1.getId()).size());
+		assertEquals(2, itemStorage.findAll().size());
 	}
 
 	@Test
 	public void testGetItemById() {
-		userStorage.create(user1);
-		Item item1 = itemStorage.addItem(user1.getId(), mapper.itemToEntity(user1.getId(), itemDto1));
-		Item item2 = itemStorage.addItem(user1.getId(), mapper.itemToEntity(user1.getId(), itemDto2));
+		userStorage.save(user1);
+		Item item1 = itemStorage.save(mapper.itemToEntity(user1.getId(), itemDto1, null));
+		Item item2 = itemStorage.save(mapper.itemToEntity(user1.getId(), itemDto2, null));
 
-		Optional<Item> itemOptional = Optional.ofNullable(itemStorage.getItemById(item2.getId()));
+		Optional<Item> itemOptional = Optional.ofNullable(itemStorage.findByIdIs(item2.getId()));
 
 		assertThat(itemOptional)
 				.isPresent()
@@ -134,10 +145,11 @@ class ShareItTests {
 
 	@Test
 	public void testEditItem() {
-		userStorage.create(user1);
-		Item toEdit = itemStorage.addItem(1, mapper.itemToEntity(user1.getId(), itemDto1));
+		User user = userStorage.save(user1);
+		Item item1 = itemStorage.save(mapper.itemToEntity(userStorage.findByIdIs(user.getId()).getId(), itemDto1, null));
 
-		Optional<Item> itemOptional = Optional.ofNullable(itemStorage.edit(toEdit.getId(), user1.getId(), itemDto2));
+		Optional<Item> itemOptional = Optional.of(itemStorage.save(mapper.itemToEntity(user.getId(),
+				itemDto2, item1.getId())));
 
 		assertThat(itemOptional)
 				.isPresent()
@@ -148,5 +160,82 @@ class ShareItTests {
 						assertThat(item).hasFieldOrPropertyWithValue("description", "Loooooooong description2")
 				);
 	}
+
+	//-------------BOOKING---------------------------------
+	@Test
+	public void testCreateBooking() {
+		User user = userStorage.save(user1);
+		User booker = userStorage.save(user2);
+		Item item1 = itemStorage.save(mapper.itemToEntity(user.getId(), itemDto1, null));
+		Item item2 = itemStorage.save(mapper.itemToEntity(user.getId(), itemDto2, null));
+
+		BookingDto bookingDto = new BookingDto(mapper.itemToShort(item2), LocalDateTime.now(),
+				LocalDateTime.now().plusDays(1));
+
+		bookingDto.setStatus(BookingState.WAITING);
+		Optional<Booking> bookingOptional =
+				Optional.of(bookingRepository.save(mapper.bookingDtoToEntity(bookingDto, booker.getId())));
+
+		assertThat(bookingOptional)
+				.isPresent()
+				.hasValueSatisfying(booking ->
+						assertThat(booking).hasFieldOrPropertyWithValue("itemOwnerId", user1.getId())
+				)
+				.hasValueSatisfying(booking ->
+						assertThat(booking).hasFieldOrPropertyWithValue("status", BookingState.WAITING)
+				);
+	}
+
+	@Test
+	public void testGetBookings() {
+		User user = userStorage.save(user1);
+		User booker = userStorage.save(user2);
+		Item item1 = itemStorage.save(mapper.itemToEntity(user.getId(), itemDto1, null));
+		Item item2 = itemStorage.save(mapper.itemToEntity(user.getId(), itemDto2, null));
+
+		BookingDto bookingDto1 = new BookingDto(mapper.itemToShort(item1), LocalDateTime.now(),
+				LocalDateTime.now().plusDays(1));
+		BookingDto bookingDto2 = new BookingDto(mapper.itemToShort(item2), LocalDateTime.now(),
+				LocalDateTime.now().plusDays(2));
+
+		bookingDto1.setStatus(BookingState.WAITING);
+		bookingDto2.setStatus(BookingState.WAITING);
+		bookingRepository.save(mapper.bookingDtoToEntity(bookingDto1, booker.getId()));
+		bookingRepository.save(mapper.bookingDtoToEntity(bookingDto2, booker.getId()));
+
+		assertEquals(2, bookingRepository.findAll().size());
+	}
+
+	//----------------------------COMMENTS----------------------------------------
+	@Test
+	public void testCreateComment() {
+		User user = userStorage.save(user1);
+		User booker = userStorage.save(user2);
+		Item item1 = itemStorage.save(mapper.itemToEntity(user.getId(), itemDto1, null));
+		Item item2 = itemStorage.save(mapper.itemToEntity(user.getId(), itemDto2, null));
+
+		BookingDto bookingDto1 = new BookingDto(mapper.itemToShort(item1), LocalDateTime.now(),
+				LocalDateTime.now().plusDays(1));
+		BookingDto bookingDto2 = new BookingDto(mapper.itemToShort(item2), LocalDateTime.now().minusDays(5),
+				LocalDateTime.now().minusDays(2));
+
+		Comment commentNew = new Comment("Comment for test");
+
+		bookingDto1.setStatus(BookingState.WAITING);
+		bookingDto2.setStatus(BookingState.WAITING);
+		bookingRepository.save(mapper.bookingDtoToEntity(bookingDto1, booker.getId()));
+		bookingRepository.save(mapper.bookingDtoToEntity(bookingDto2, booker.getId()));
+
+		Optional<Comment> testComment =
+				Optional.of(itemService.addComment(item2.getId(), booker.getId(), commentNew).getComment());
+
+		assertThat(testComment)
+				.isPresent()
+				.hasValueSatisfying(comment ->
+						assertThat(comment).hasFieldOrPropertyWithValue("text", "Comment for test")
+				)
+				.hasValueSatisfying(booking ->
+						assertThat(booking).hasFieldOrPropertyWithValue("authorName", "Test2")
+				);
+	}
 }
-*/

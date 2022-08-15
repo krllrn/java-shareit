@@ -31,4 +31,10 @@ public class BookingDto {
 
     @JsonAlias({"itemId"})
     private ItemShort item;
+
+    public BookingDto(ItemShort item, LocalDateTime start, LocalDateTime end) {
+        this.item = item;
+        this.start = start;
+        this.end = end;
+    }
 }

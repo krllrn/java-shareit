@@ -39,7 +39,7 @@ public class UserController {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        return mapper.userToDto(userRepository.getReferenceById(id));
+        return mapper.userToDto(userRepository.findByIdIs(id));
     }
 
     @PostMapping
@@ -61,7 +61,7 @@ public class UserController {
         if (id <= 0) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "ID must be positive");
         }
-        userRepository.delete(userRepository.getReferenceById(id));
+        userRepository.delete(userRepository.findByIdIs(id));
     }
 
     @ExceptionHandler({EntityNotFoundException.class})
