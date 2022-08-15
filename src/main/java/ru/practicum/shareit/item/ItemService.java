@@ -7,5 +7,6 @@ import java.util.List;
 
 public interface ItemService {
     List<Item> search(String text);
+
     Item addComment(Long itemId, Long userId, Comment comment);
 }
