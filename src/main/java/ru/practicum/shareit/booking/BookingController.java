@@ -54,9 +54,6 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public BookingDto updateBooking(@RequestParam(value = "approved") String approved, @PathVariable Long bookingId,
                                     @RequestHeader("X-Sharer-User-Id") Long userId) {
-        // Подтверждение или отклонение запроса на бронирование. Может быть выполнено только владельцем вещи.
-        // Затем статус бронирования становится либо APPROVED, либо REJECTED.
-        // Параметр approved может принимать значения true или false
         checkUser(userId);
         Booking booking = bookingRepository.findByIdIs(bookingId);
         if (booking.getItemOwnerId() != userId) {
@@ -80,8 +77,6 @@ public class BookingController {
     @GetMapping("/{bookingId}")
     public BookingDto getInfoAboutBooking(@RequestHeader("X-Sharer-User-Id") Long userId,
                                           @PathVariable Long bookingId) {
-         //Может быть выполнено либо автором бронирования,
-        //либо владельцем вещи, к которой относится бронирование.
         checkUser(userId);
         if (bookingRepository.findByIdIs(bookingId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found!");
@@ -99,13 +94,7 @@ public class BookingController {
     @GetMapping
     public List<BookingDto> getUserBookings(@RequestHeader("X-Sharer-User-Id") Long bookerId,
                                    @RequestParam(value = "state", required = false, defaultValue = "ALL") String state) {
-        //Также он может принимать значения CURRENT (англ. «текущие»), **PAST** (англ. «завершённые»),
-        // FUTURE (англ. «будущие»), WAITING (англ. «ожидающие подтверждения»), REJECTED (англ. «отклонённые»).
-        // Бронирования должны возвращаться отсортированными по дате от более новых к более старым.
         checkUser(bookerId);
-        if (state == null) {
-            state = "ALL";
-        }
         List<Booking> bookingList = new ArrayList<>();
         switch (state) {
             case ("ALL"):
@@ -139,11 +128,7 @@ public class BookingController {
     public List<BookingDto> getBookingsForUserItems(
             @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
                                                @RequestHeader("X-Sharer-User-Id") Long userId) {
-        //Этот запрос имеет смысл для владельца хотя бы одной вещи.
         checkUser(userId);
-        if (state == null) {
-            state = "ALL";
-        }
         List<Booking> bookingList = new ArrayList<>();
         List<Item> userItemList = itemRepository.findByUserIdContaining(userId);
         if (userItemList.size() < 1) {
