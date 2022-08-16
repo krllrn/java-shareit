@@ -19,10 +19,10 @@ public class BookingDto {
 
     private long id;
 
-    @FutureOrPresent(message = "Start date in past - WRONG!")
+    @FutureOrPresent(message = "Date in past - WRONG!")
     private LocalDateTime start;
 
-    @FutureOrPresent(message = "End date in past - WRONG!")
+    @FutureOrPresent(message = "Date in past - WRONG!")
     private LocalDateTime end;
 
     private BookingState status;

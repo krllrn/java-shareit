@@ -10,7 +10,6 @@ import ru.practicum.shareit.booking.BookingState;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.mapper.Mapper;
-import ru.practicum.shareit.user.UserRepository;
 
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.NonUniqueResultException;
@@ -22,45 +21,31 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static ru.practicum.shareit.ShareItApp.USER_ID_HEADER_REQUEST;
+
 @RestController
 @RequestMapping("/items")
 public class ItemController {
 
-    private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final Mapper mapper;
 
     @Autowired
-    public ItemController(ItemRepository itemRepository, UserRepository userRepository,
-                          BookingRepository bookingRepository, ItemService itemService, Mapper mapper) {
-        this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
+    public ItemController(BookingRepository bookingRepository, ItemService itemService, Mapper mapper) {
         this.bookingRepository = bookingRepository;
         this.itemService = itemService;
         this.mapper = mapper;
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID.");
-        }
-        return itemRepository.findByUserIdContaining(userId).stream()
-                .map(mapper::itemToDto)
-                .collect(Collectors.toList());
+    public List<ItemDto> getItems(@RequestHeader(USER_ID_HEADER_REQUEST) Long userId) {
+        return itemService.getItems(userId);
     }
 
     @GetMapping("/{itemId}")
-    public ItemDto getItemById(@PathVariable long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        if (itemRepository.findByIdIs(itemId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found.");
-        }
-        if (userId != itemRepository.findByIdIs(itemId).getOwner().getId()) {
-            return mapper.itemToDtoWoBookings(itemRepository.findByIdIs(itemId));
-        }
-        return mapper.itemToDto(itemRepository.findByIdIs(itemId));
+    public ItemDto getItemById(@PathVariable long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId) {
+        return itemService.getItemById(itemId, userId);
     }
 
     @GetMapping("/search")
@@ -74,31 +59,19 @@ public class ItemController {
     }
 
     @PostMapping
-    public ItemDto addItem(@PathVariable (required = false) Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId,
+    public ItemDto addItem(@PathVariable (required = false) Long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
                            @Valid @RequestBody ItemDto itemDto) {
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID. Only owner have access");
-        }
-        if (userRepository.findByIdIs(userId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
-        }
-        return mapper.itemToDto(itemRepository.save(mapper.itemToEntity(userId, itemDto, itemId)));
+        return itemService.addItem(itemId, userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
-    public ItemDto edit(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId,
+    public ItemDto edit(@PathVariable Long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
                         @RequestBody ItemDto itemDto) {
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID. Only owner have access");
-        }
-        if (userRepository.findByIdIs(userId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
-        }
-        return mapper.itemToDto(itemRepository.save(mapper.itemToEntity(userId, itemDto, itemId)));
+        return itemService.edit(itemId, userId, itemDto);
     }
 
     @PostMapping("/{itemId}/comment")
-    public Comment addComment(@PathVariable long itemId, @RequestHeader("X-Sharer-User-Id") Long userId,
+    public Comment addComment(@PathVariable long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
                               @Valid @RequestBody Comment comment) {
         Booking correctBooking = bookingRepository.findByBookerIdAndItemIdAndStartDateCorrectOrStatus(userId, itemId,
                 LocalDateTime.now(), BookingState.REJECTED);
