@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.*;
+import org.springframework.lang.Nullable;
 import ru.practicum.shareit.booking.dto.BookingShort;
 import ru.practicum.shareit.item.model.Comment;
 
@@ -37,9 +38,18 @@ public class ItemDto {
 
     private List<Comment> comments;
 
+    private Long requestId;
+
     public ItemDto(String name, String description, Boolean available) {
         this.name = name;
         this.description = description;
         this.available = available;
+    }
+
+    public ItemDto(String name, String description, Boolean available, long requestId) {
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.requestId = requestId;
     }
 }

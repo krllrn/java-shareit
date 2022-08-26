@@ -12,9 +12,13 @@ import ru.practicum.shareit.booking.dto.BookingShort;
 import ru.practicum.shareit.item.CommentRepository;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemDto;
+import ru.practicum.shareit.item.dto.ItemRequests;
 import ru.practicum.shareit.item.dto.ItemShort;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.requests.ItemRequest;
+import ru.practicum.shareit.requests.ItemRequestRepository;
+import ru.practicum.shareit.requests.dto.ItemRequestDto;
 import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
@@ -22,6 +26,7 @@ import ru.practicum.shareit.user.dto.UserId;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 public class Mapper {
@@ -31,15 +36,17 @@ public class Mapper {
     private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Autowired
     public Mapper(ModelMapper modelMapper, UserRepository userRepository, ItemRepository itemRepository,
-                  BookingRepository bookingRepository, CommentRepository commentRepository) {
+                  BookingRepository bookingRepository, CommentRepository commentRepository, ItemRequestRepository itemRequestRepository) {
         this.modelMapper = modelMapper;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
+        this.itemRequestRepository = itemRequestRepository;
     }
 
     // ---------------- ITEM ------------------------------------------------------------
@@ -85,6 +92,9 @@ public class Mapper {
                 }
                 if (itemDto.getAvailable() != null) {
                     item.setAvailable(itemDto.getAvailable());
+                }
+                if (itemDto.getRequestId() != null) {
+                    item.setRequestId(itemDto.getRequestId());
                 }
             }
         }
@@ -145,5 +155,22 @@ public class Mapper {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Item isn't available!");
         }
         return booking;
+    }
+
+    // -------------------ITEM REQUEST -----------------------------------------------------------
+    public ItemRequestDto requestToDto(ItemRequest itemRequest) {
+        List<ItemRequests> items = itemRepository.findByRequestIdContaining(itemRequest.getId()).stream()
+                .map(item -> modelMapper.map(item, ItemRequests.class))
+                .collect(Collectors.toList());
+        ItemRequestDto itemRequestDto = modelMapper.map(itemRequest, ItemRequestDto.class);
+        itemRequestDto.setItems(items);
+        return itemRequestDto;
+    }
+
+    public ItemRequest requestDtoToEntity(Long userRequestId, ItemRequestDto itemRequestDto) {
+        ItemRequest itemRequest = modelMapper.map(itemRequestDto, ItemRequest.class);
+        itemRequest.setReqOwnerId(userRepository.findByIdIs(userRequestId));
+        itemRequest.setCreated(LocalDateTime.now());
+        return itemRequest;
     }
 }

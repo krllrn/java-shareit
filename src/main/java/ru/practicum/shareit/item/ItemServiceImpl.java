@@ -1,6 +1,9 @@
 package ru.practicum.shareit.item;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -33,15 +36,31 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> search(String text) {
+    public List<ItemDto> search(String text, Integer from, Integer size) {
         List<Item> searchedItems = new ArrayList<>();
-        for (Item i : itemRepository.findAll()) {
-            if ((i.getName().toLowerCase().contains(text) || i.getDescription().toLowerCase().contains(text)) &&
-                    i.getAvailable()) {
-                searchedItems.add(i);
+        if (from == null && size == null) {
+            for (Item i : itemRepository.findAll()) {
+                if ((i.getName().toLowerCase().contains(text) || i.getDescription().toLowerCase().contains(text)) &&
+                        i.getAvailable()) {
+                    searchedItems.add(i);
+                }
+            }
+        } else {
+            if (from < 0 || size <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
+            }
+            Sort sortById = Sort.by(Sort.Direction.ASC, "id");
+            Pageable page = PageRequest.of(from/size, size, sortById);
+            for (Item i : itemRepository.findAll(page).getContent()) {
+                if ((i.getName().toLowerCase().contains(text) || i.getDescription().toLowerCase().contains(text)) &&
+                        i.getAvailable()) {
+                    searchedItems.add(i);
+                }
             }
         }
-        return searchedItems;
+        return searchedItems.stream()
+                .map(mapper::itemToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -56,13 +75,25 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<ItemDto> getItems(Long userId) {
+    public List<ItemDto> getItems(Long userId, Integer from, Integer size) {
         if (userId == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID.");
         }
-        return itemRepository.findByUserIdContaining(userId).stream()
-                .map(mapper::itemToDto)
-                .collect(Collectors.toList());
+        if (from == null && size == null) {
+            return itemRepository.findByUserIdContaining(userId).stream()
+                    .map(mapper::itemToDto)
+                    .collect(Collectors.toList());
+        } else {
+            if (from < 0 || size <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
+            }
+            Sort sortById = Sort.by(Sort.Direction.ASC, "id");
+            Pageable page = PageRequest.of(from/size, size, sortById);
+            return itemRepository.findAll(page).getContent().stream()
+                    .filter(i -> i.getOwner().getId() != userId)
+                    .map(mapper::itemToDto)
+                    .collect(Collectors.toList());
+        }
     }
 
     @Override

@@ -23,6 +23,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public void checkUser(Long userId) {
+        if (userId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID.");
+        }
+        if (userRepository.findByIdIs(userId) == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
+        }
+    }
+
+    @Override
     public List<UserDto> getAll() {
         return userRepository.findAll().stream()
                 .map(mapper::userToDto)

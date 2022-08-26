@@ -33,6 +33,9 @@ public class Item {
     @JoinColumn(name = "comment_id")
     private Comment comment;
 
+    @Column(name = "request_id")
+    private Long requestId;
+
     public Item(long id, String name) {
         this.id = id;
         this.name = name;

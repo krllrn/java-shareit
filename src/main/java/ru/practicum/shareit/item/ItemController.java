@@ -39,8 +39,10 @@ public class ItemController {
     }
 
     @GetMapping
-    public List<ItemDto> getItems(@RequestHeader(USER_ID_HEADER_REQUEST) Long userId) {
-        return itemService.getItems(userId);
+    public List<ItemDto> getItems(@RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
+                                  @RequestParam(value = "from", required = false) Integer from,
+                                  @RequestParam(value = "size", required = false) Integer size) {
+        return itemService.getItems(userId, from, size);
     }
 
     @GetMapping("/{itemId}")
@@ -49,13 +51,13 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public List<ItemDto> search(@RequestParam String text) {
+    public List<ItemDto> search(@RequestParam String text,
+                                @RequestParam(value = "from", required = false) Integer from,
+                                @RequestParam(value = "size", required = false) Integer size) {
         if (text.isBlank() || text.isEmpty()) {
             return new ArrayList<>();
         }
-        return itemService.search(text.toLowerCase()).stream()
-                .map(mapper::itemToDto)
-                .collect(Collectors.toList());
+        return itemService.search(text.toLowerCase(), from, size);
     }
 
     @PostMapping

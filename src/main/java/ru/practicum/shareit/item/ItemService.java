@@ -7,11 +7,11 @@ import ru.practicum.shareit.item.model.Item;
 import java.util.List;
 
 public interface ItemService {
-    List<Item> search(String text);
+    List<ItemDto> search(String text, Integer from, Integer size);
 
     Item addComment(Long itemId, Long userId, Comment comment);
 
-    List<ItemDto> getItems(Long userId);
+    List<ItemDto> getItems(Long userId, Integer from, Integer size);
 
     ItemDto getItemById(long itemId, Long userId);
 

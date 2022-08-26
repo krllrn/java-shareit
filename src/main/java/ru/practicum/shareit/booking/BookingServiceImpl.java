@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -10,9 +12,9 @@ import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.mapper.Mapper;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,30 +24,22 @@ public class BookingServiceImpl implements BookingService {
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
+    private final UserService userService;
     private final Mapper mapper;
 
     @Autowired
     public BookingServiceImpl(BookingRepository bookingRepository, UserRepository userRepository,
-                             ItemRepository itemRepository, Mapper mapper) {
+                              ItemRepository itemRepository, UserService userService, Mapper mapper) {
         this.bookingRepository = bookingRepository;
         this.userRepository = userRepository;
         this.itemRepository = itemRepository;
+        this.userService = userService;
         this.mapper = mapper;
     }
 
     @Override
-    public void checkUser(Long userId) {
-        if (userId == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No USER_ID.");
-        }
-        if (userRepository.findByIdIs(userId) == null) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found!");
-        }
-    }
-
-    @Override
     public BookingDto addBooking(Long bookerId, BookingDto bookingDto) {
-        checkUser(bookerId);
+        userService.checkUser(bookerId);
         if (itemRepository.findByIdIs(bookingDto.getItem().getId()) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Item not found!");
         }
@@ -55,7 +49,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto updateBooking(String approved, Long bookingId, Long userId) {
-        checkUser(userId);
+        userService.checkUser(userId);
         Booking booking = bookingRepository.findByIdIs(bookingId);
         if (booking.getItemOwnerId() != userId) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Only owner have access.");
@@ -76,7 +70,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDto getInfoAboutBooking(Long userId, Long bookingId) {
-        checkUser(userId);
+        userService.checkUser(userId);
         if (bookingRepository.findByIdIs(bookingId) == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Booking not found!");
         }
@@ -90,27 +84,35 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getUserBookings(Long bookerId, String state) {
-        checkUser(bookerId);
-        List<Booking> bookingList = new ArrayList<>();
+    public List<BookingDto> getUserBookings(Long bookerId, String state, Integer from, Integer size) {
+        userService.checkUser(bookerId);
+        if (size == null || from == null) {
+            from = 0;
+            size = bookingRepository.findAll().size();
+        }
+        if (from < 0 || size <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
+        }
+        Pageable page = PageRequest.of(from/size, size);
+        List<Booking> bookingList;
         switch (state) {
             case ("ALL"):
-                bookingList = bookingRepository.findAllByBookerId(bookerId);
+                bookingList = bookingRepository.findAllByBookerId(bookerId, page);
                 break;
             case ("CURRENT"):
-                bookingList = bookingRepository.findAllByBookerIdAndStartAfterAndEndBefore(bookerId, LocalDateTime.now());
+                bookingList = bookingRepository.findAllByBookerIdAndStartAfterAndEndBefore(bookerId, LocalDateTime.now(), page);
                 break;
             case ("PAST"):
-                bookingList = bookingRepository.findAllByBookerIdInPast(bookerId, LocalDateTime.now());
+                bookingList = bookingRepository.findAllByBookerIdInPast(bookerId, LocalDateTime.now(), page);
                 break;
             case ("FUTURE"):
-                bookingList = bookingRepository.findAllByBookerIdInFuture(bookerId, LocalDateTime.now());
+                bookingList = bookingRepository.findAllByBookerIdInFuture(bookerId, LocalDateTime.now(), page);
                 break;
             case ("WAITING"):
-                bookingList = bookingRepository.findAllByBookerIdAndStatus(bookerId, BookingState.WAITING);
+                bookingList = bookingRepository.findAllByBookerIdAndStatus(bookerId, BookingState.WAITING, page);
                 break;
             case ("REJECTED"):
-                bookingList = bookingRepository.findAllByBookerIdAndStatus(bookerId, BookingState.REJECTED);
+                bookingList = bookingRepository.findAllByBookerIdAndStatus(bookerId, BookingState.REJECTED, page);
                 break;
             default:
                 throw new UnsupportedStateException("Unknown state: UNSUPPORTED_STATUS");
@@ -121,31 +123,39 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDto> getBookingsForUserItems(String state, Long userId) {
-        checkUser(userId);
-        List<Booking> bookingList = new ArrayList<>();
+    public List<BookingDto> getBookingsForUserItems(String state, Long userId, Integer from, Integer size) {
+        userService.checkUser(userId);
+        if (size == null || from == null) {
+            from = 0;
+            size = bookingRepository.findAll().size();
+        }
+        if (from < 0 || size <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
+        }
+        Pageable page = PageRequest.of(from/size, size);
+        List<Booking> bookingList;
         List<Item> userItemList = itemRepository.findByUserIdContaining(userId);
         if (userItemList.size() < 1) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "User don't have enough items!");
         }
         switch (state) {
             case ("ALL"):
-                bookingList = bookingRepository.findByItemOwnerId(userId);
+                bookingList = bookingRepository.findByItemOwnerId(userId, page);
                 break;
             case ("CURRENT"):
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStartAfterAndEndBefore(userId, LocalDateTime.now());
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStartAfterAndEndBefore(userId, LocalDateTime.now(), page);
                 break;
             case ("PAST"):
-                bookingList = bookingRepository.findAllByItemOwnerIdInPast(userId, LocalDateTime.now());
+                bookingList = bookingRepository.findAllByItemOwnerIdInPast(userId, LocalDateTime.now(), page);
                 break;
             case ("FUTURE"):
-                bookingList = bookingRepository.findAllByItemOwnerIdInFuture(userId, LocalDateTime.now());
+                bookingList = bookingRepository.findAllByItemOwnerIdInFuture(userId, LocalDateTime.now(), page);
                 break;
             case ("WAITING"):
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.WAITING, page);
                 break;
             case ("REJECTED"):
-                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED);
+                bookingList = bookingRepository.findAllByItemOwnerIdAndStatus(userId, BookingState.REJECTED, page);
                 break;
             default:
                 throw new UnsupportedStateException("Unknown state: UNSUPPORTED_STATUS");

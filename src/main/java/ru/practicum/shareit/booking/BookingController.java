@@ -48,16 +48,21 @@ public class BookingController {
     //Получение списка всех бронирований текущего пользователя.
     @GetMapping
     public List<BookingDto> getUserBookings(@RequestHeader(USER_ID_HEADER_REQUEST) Long bookerId,
-                                   @RequestParam(value = "state", required = false, defaultValue = "ALL") String state) {
-        return bookingService.getUserBookings(bookerId, state);
+                                   @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
+                                            @RequestParam(value = "from", required = false) Integer from,
+                                            @RequestParam(value = "size", required = false) Integer size) {
+
+        return bookingService.getUserBookings(bookerId, state, from, size);
     }
 
     //Получение списка бронирований для всех вещей текущего пользователя.
     @GetMapping("/owner")
     public List<BookingDto> getBookingsForUserItems(
             @RequestParam(value = "state", required = false, defaultValue = "ALL") String state,
-                                               @RequestHeader(USER_ID_HEADER_REQUEST) Long userId) {
-        return bookingService.getBookingsForUserItems(state, userId);
+                                                @RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
+                                                @RequestParam(value = "from", required = false) Integer from,
+                                                @RequestParam(value = "size", required = false) Integer size) {
+        return bookingService.getBookingsForUserItems(state, userId, from, size);
     }
 
     @ExceptionHandler({EntityNotFoundException.class})
