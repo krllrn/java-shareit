@@ -1,7 +1,6 @@
 package ru.practicum.shareit.item.dto;
 
 import lombok.*;
-import org.springframework.lang.Nullable;
 import ru.practicum.shareit.booking.dto.BookingShort;
 import ru.practicum.shareit.item.model.Comment;
 

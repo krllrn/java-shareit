@@ -7,6 +7,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+import ru.practicum.shareit.booking.BookingService;
+import ru.practicum.shareit.booking.BookingState;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
@@ -21,14 +23,16 @@ import java.util.stream.Collectors;
 @Service
 public class ItemServiceImpl implements ItemService {
 
+    private final BookingService bookingService;
     private final ItemRepository itemRepository;
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final Mapper mapper;
 
     @Autowired
-    ItemServiceImpl(ItemRepository itemRepository, CommentRepository commentRepository, UserRepository userRepository,
-                    Mapper mapper) {
+    public ItemServiceImpl(BookingService bookingService, ItemRepository itemRepository, CommentRepository commentRepository, UserRepository userRepository,
+                           Mapper mapper) {
+        this.bookingService = bookingService;
         this.itemRepository = itemRepository;
         this.commentRepository = commentRepository;
         this.userRepository = userRepository;
@@ -65,6 +69,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item addComment(Long itemId, Long userId, Comment comment) {
+        bookingService.checkCorrect(userId, itemId, LocalDateTime.now(), BookingState.REJECTED);
         Item item = itemRepository.findByIdIs(itemId);
         comment.setItemId(itemId);
         comment.setAuthorName(userRepository.findByIdIs(userId).getName());

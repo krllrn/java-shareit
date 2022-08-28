@@ -51,15 +51,15 @@ public class Mapper {
 
     // ---------------- ITEM ------------------------------------------------------------
 
-    public ItemDto itemToDto(Item item) {
+        public ItemDto itemToDto(Item item) {
         ItemDto itemDto = modelMapper.map(item, ItemDto.class);
         if (bookingRepository.findByItemIdAndEndDate(item.getId(), LocalDateTime.now()) != null) {
-            itemDto.setLastBooking(modelMapper.map(bookingRepository.findByItemIdAndEndDate(item.getId(), LocalDateTime.now()),
-                    BookingShort.class));
+            itemDto.setLastBooking(modelMapper.map(bookingRepository.findByItemIdAndEndDate(item.getId(),
+                            LocalDateTime.now()), BookingShort.class));
         }
         if (bookingRepository.findByItemIdAndStartDate(item.getId(), LocalDateTime.now()) != null) {
-            itemDto.setNextBooking(modelMapper.map(bookingRepository.findByItemIdAndStartDate(item.getId(), LocalDateTime.now()),
-                    BookingShort.class));
+            itemDto.setNextBooking(modelMapper.map(bookingRepository.findByItemIdAndStartDate(item.getId(),
+                            LocalDateTime.now()), BookingShort.class));
         }
         List<Comment> commentList = commentRepository.findAllByItemId(item.getId());
         itemDto.setComments(commentList);

@@ -41,6 +41,15 @@ public class Item {
         this.name = name;
     }
 
+    public Item(User owner, String name, String description, Boolean available, Comment comment, Long requestId) {
+        this.owner = owner;
+        this.name = name;
+        this.description = description;
+        this.available = available;
+        this.comment = comment;
+        this.requestId = requestId;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

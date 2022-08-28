@@ -2,6 +2,7 @@ package ru.practicum.shareit.booking;
 
 import ru.practicum.shareit.booking.dto.BookingDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface BookingService {
@@ -14,4 +15,6 @@ public interface BookingService {
     List<BookingDto> getUserBookings(Long bookerId, String state, Integer from, Integer size);
 
     List<BookingDto> getBookingsForUserItems(String state, Long userId, Integer from, Integer size);
+
+    void checkCorrect(Long userId, Long itemId, LocalDateTime date, BookingState state);
 }

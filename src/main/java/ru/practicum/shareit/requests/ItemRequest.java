@@ -28,4 +28,10 @@ public class ItemRequest {
     @ManyToOne
     @JoinColumn(name = "request_owner_id")
     private User reqOwnerId;
+
+    public ItemRequest(String description, LocalDateTime created, User reqOwnerId) {
+        this.description = description;
+        this.created = created;
+        this.reqOwnerId = reqOwnerId;
+    }
 }

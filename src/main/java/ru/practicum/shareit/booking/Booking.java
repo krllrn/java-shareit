@@ -49,4 +49,14 @@ public class Booking {
     @Transient
     private String feedback;
 
+    public Booking(Item item, LocalDateTime start, LocalDateTime end, User booker, BookingState status, String bookingFromOwner, long itemOwnerId, String feedback) {
+        this.item = item;
+        this.start = start;
+        this.end = end;
+        this.booker = booker;
+        this.status = status;
+        this.bookingFromOwner = bookingFromOwner;
+        this.itemOwnerId = itemOwnerId;
+        this.feedback = feedback;
+    }
 }

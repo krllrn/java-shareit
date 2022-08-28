@@ -164,4 +164,12 @@ public class BookingServiceImpl implements BookingService {
                 .map(mapper::bookingToDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public void checkCorrect(Long userId, Long itemId, LocalDateTime date, BookingState state) {
+        if (bookingRepository.findByBookerIdAndItemIdAndStartDateCorrectOrStatus(userId, itemId,
+                LocalDateTime.now(), BookingState.REJECTED) == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "This user didn't take this item.");
+        }
+    }
 }
