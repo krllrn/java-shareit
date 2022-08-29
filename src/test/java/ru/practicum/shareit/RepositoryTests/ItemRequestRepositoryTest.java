@@ -6,10 +6,10 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-import ru.practicum.shareit.requests.ItemRequest;
 import ru.practicum.shareit.requests.ItemRequestRepository;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,6 +20,7 @@ public class ItemRequestRepositoryTest {
 
     private ItemRequestRepository itemRequestRepository;
     private UserRepository userRepository;
+
     User user = new User("test@test.com", "Test Testov");
     User user2 = new User("test2@test.com", "Test2 Testov");
     User user3 = new User("test3@test.com", "Test3 Testov");
@@ -38,7 +39,6 @@ public class ItemRequestRepositoryTest {
         userRepository.save(user);
         userRepository.save(user2);
         userRepository.save(user3);
-
         itemRequestRepository.save(itemRequest1);
         itemRequestRepository.save(itemRequest2);
         itemRequestRepository.save(itemRequest3);

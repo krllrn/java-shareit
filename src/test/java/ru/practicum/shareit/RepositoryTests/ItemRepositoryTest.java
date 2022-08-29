@@ -7,10 +7,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.requests.ItemRequest;
 import ru.practicum.shareit.requests.ItemRequestRepository;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -24,6 +24,7 @@ public class ItemRepositoryTest {
     private ItemRepository itemRepository;
     private UserRepository userRepository;
     private ItemRequestRepository itemRequestRepository;
+
     User user = new User("test@test.com", "Test Testov");
     User user2 = new User("test2@test.com", "Test2 Testov");
     User user3 = new User("test3@test.com", "Test3 Testov");
@@ -31,7 +32,6 @@ public class ItemRepositoryTest {
     Item item1 = new Item(user, "Name1", "Description1", true, null, null);
     Item item2 = new Item(user2, "Name2", "Description2", false, null, null);
     Item item3 = new Item(user2, "Name3", "Description3", true, null, null);
-
 
     @Autowired
     public ItemRepositoryTest(ItemRepository itemRepository, UserRepository userRepository, ItemRequestRepository itemRequestRepository) {
@@ -50,7 +50,6 @@ public class ItemRepositoryTest {
         itemRepository.save(item1);
         itemRepository.save(item2);
         itemRepository.save(item3);
-
     }
 
     @Test

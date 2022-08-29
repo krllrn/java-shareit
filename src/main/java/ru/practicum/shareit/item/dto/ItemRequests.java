@@ -14,8 +14,4 @@ public class ItemRequests {
     String description;
     Boolean available;
     long requestId;
-
-    public ItemRequests(long id) {
-        this.id = id;
-    }
 }

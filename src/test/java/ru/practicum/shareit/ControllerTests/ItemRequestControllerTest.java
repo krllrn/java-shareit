@@ -93,4 +93,50 @@ public class ItemRequestControllerTest {
                 .andExpect(jsonPath("$.id", is(itemRequestDto.getId()), Long.class))
                 .andExpect(jsonPath("$.description", is(itemRequestDto.getDescription())));
     }
+
+    @Test
+    public void testGetAllRequestsNullFromSize() throws Exception {
+        List<ItemRequestDto> itemRequestList = new ArrayList<>();
+        itemRequestList.add(itemRequestDto);
+        itemRequestList.add(itemRequestDto2);
+        when(itemRequestService.getAll())
+                .thenReturn(itemRequestList);
+
+        mvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", isA(ArrayList.class)))
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(itemRequestDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].description", is(itemRequestDto.getDescription())))
+                .andExpect(jsonPath("$[1].id", is(itemRequestDto.getId()), Long.class))
+                .andExpect(jsonPath("$[1].description", is(itemRequestDto2.getDescription())));
+    }
+
+    @Test
+    public void testGetAllRequestsWithFromSize() throws Exception {
+        List<ItemRequestDto> itemRequestList = new ArrayList<>();
+        itemRequestList.add(itemRequestDto);
+        itemRequestList.add(itemRequestDto2);
+        when(itemRequestService.getAllWithSize(any(), any(), any()))
+                .thenReturn(itemRequestList);
+
+        mvc.perform(get("/requests/all")
+                        .header("X-Sharer-User-Id", 1)
+                        .param("from", String.valueOf(0))
+                        .param("size", String.valueOf(5))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.*", isA(ArrayList.class)))
+                .andExpect(jsonPath("$.*", hasSize(2)))
+                .andExpect(jsonPath("$[0].id", is(itemRequestDto.getId()), Long.class))
+                .andExpect(jsonPath("$[0].description", is(itemRequestDto.getDescription())))
+                .andExpect(jsonPath("$[1].id", is(itemRequestDto.getId()), Long.class))
+                .andExpect(jsonPath("$[1].description", is(itemRequestDto2.getDescription())));
+    }
 }

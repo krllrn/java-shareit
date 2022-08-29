@@ -18,5 +18,4 @@ public class ShareItApp {
 	public ModelMapper modelMapper() {
 		return new ModelMapper();
 	}
-
 }

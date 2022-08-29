@@ -7,15 +7,15 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingState;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.requests.ItemRequest;
 import ru.practicum.shareit.requests.ItemRequestRepository;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.requests.model.ItemRequest;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
@@ -62,13 +62,11 @@ public class BookingRepositoryTest {
         userRepository.save(user);
         userRepository.save(user2);
         userRepository.save(user3);
-
         itemRepository.save(item1);
         itemRepository.save(item2);
         itemRepository.save(item3);
         itemRequestRepository.save(itemRequest1);
         item1.setRequestId(itemRequest1.getId());
-
         booking1.setItemOwnerId(item2.getOwner().getId());
         booking2.setItemOwnerId(item3.getOwner().getId());
         booking3.setItemOwnerId(item1.getOwner().getId());

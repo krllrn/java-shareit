@@ -8,10 +8,10 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.server.ResponseStatusException;
 import ru.practicum.shareit.mapper.Mapper;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserServiceImpl;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,7 @@ public class UserServiceTest {
     private final User user = new User(1L, "test1", "test1@email.com");
     private final User user2 = new User(2L, "test2", "test2@email.com");
     private final UserDto userDto = new UserDto(1L, "test1", "test1@email.com");
+    private final User userTest = new User(1L);
 
     @Test
     public void testGetAll() {
@@ -108,5 +109,16 @@ public class UserServiceTest {
             userService.delete(0L);
         });
         Assertions.assertTrue(exception.getMessage().contains("ID must be positive"));
+    }
+
+    @Test
+    public void testCheckUserNotFound() {
+        UserServiceImpl userService = new UserServiceImpl(userRepository, mapper);
+        Mockito.when(userRepository.findByIdIs(any()))
+                .thenReturn(null);
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            userService.checkUser(10L);
+        });
+        Assertions.assertTrue(exception.getMessage().contains("User not found!"));
     }
 }

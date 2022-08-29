@@ -134,7 +134,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetWithWringId() throws Exception {
+    public void testGetWithWrongId() throws Exception {
         when(userService.getById(Mockito.anyLong()))
                 .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND));
 

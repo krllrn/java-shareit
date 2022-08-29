@@ -43,7 +43,8 @@ public class ItemServiceImpl implements ItemService {
     public List<ItemDto> search(String text, Integer from, Integer size) {
         List<Item> searchedItems = new ArrayList<>();
         if (from == null && size == null) {
-            for (Item i : itemRepository.findAll()) {
+            List<Item> foundedItems = itemRepository.findAll();
+            for (Item i : foundedItems) {
                 if ((i.getName().toLowerCase().contains(text) || i.getDescription().toLowerCase().contains(text)) &&
                         i.getAvailable()) {
                     searchedItems.add(i);

@@ -7,7 +7,6 @@ import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Comment;
 
 import javax.persistence.EntityNotFoundException;
-import javax.persistence.NonUniqueResultException;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.io.IOException;
@@ -70,10 +69,5 @@ public class ItemController {
     @ExceptionHandler({EntityNotFoundException.class})
     void handleEntityNotFound(HttpServletResponse response) throws IOException {
         response.sendError(HttpStatus.NOT_FOUND.value());
-    }
-
-    @ExceptionHandler({NonUniqueResultException.class})
-    void handleEntityNonUnique(HttpServletResponse response) throws IOException {
-        response.sendError(HttpStatus.BAD_REQUEST.value());
     }
 }

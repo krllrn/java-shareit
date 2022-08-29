@@ -7,19 +7,19 @@ import org.mockito.Mockito;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.web.server.ResponseStatusException;
-import ru.practicum.shareit.booking.Booking;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.BookingServiceImpl;
 import ru.practicum.shareit.booking.BookingState;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.exception.UnsupportedStateException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.dto.ItemShort;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.mapper.Mapper;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.UserService;
+import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -448,5 +448,16 @@ public class BookingServiceTest {
             bookingService.getBookingsForUserItems("TEST", user.getId(), 0, 20);
         });
         Assertions.assertTrue(exception.getMessage().contains("Unknown state: UNSUPPORTED_STATUS"));
+    }
+
+    @Test
+    public void testCheckCorrect() {
+        BookingServiceImpl bookingService = new BookingServiceImpl(bookingRepository, userRepository, itemRepository, userService, mapper);
+        Mockito.when(bookingRepository.findByBookerIdAndItemIdAndStartDateCorrectOrStatus(any(), any(), any(), any()))
+                .thenReturn(null);
+        Exception exception = assertThrows(ResponseStatusException.class, () -> {
+            bookingService.checkCorrect(1L, 2L, LocalDateTime.now(), BookingState.REJECTED);
+        });
+        Assertions.assertTrue(exception.getMessage().contains("This user didn't take this item."));
     }
 }

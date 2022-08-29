@@ -212,6 +212,15 @@
 							<goals>
 								<goal>report</goal>
 							</goals>
+							<configuration>
+								<excludes>
+									<exclude>ru/practicum/**/**/model/*</exclude>
+									<exclude>ru/practicum/**/**/dto/*</exclude>
+									<exclude>ru/practicum/**/**/model/Item*</exclude>
+									<exclude>ru/practicum/**/**/model/User*</exclude>
+									<exclude>ru/practicum/*/ShareItApp.class</exclude>
+								</excludes>
+							</configuration>
 						</execution>
 					</executions>
 				</plugin>

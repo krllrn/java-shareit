@@ -2,6 +2,7 @@ package ru.practicum.shareit.requests;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import ru.practicum.shareit.requests.model.ItemRequest;
 
 import java.util.List;
 

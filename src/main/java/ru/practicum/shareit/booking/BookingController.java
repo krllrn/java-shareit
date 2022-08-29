@@ -1,14 +1,10 @@
 package ru.practicum.shareit.booking;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 
-import javax.persistence.EntityNotFoundException;
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.List;
 
 import static ru.practicum.shareit.ShareItApp.USER_ID_HEADER_REQUEST;
@@ -63,10 +59,5 @@ public class BookingController {
                                                 @RequestParam(value = "from", required = false) Integer from,
                                                 @RequestParam(value = "size", required = false) Integer size) {
         return bookingService.getBookingsForUserItems(state, userId, from, size);
-    }
-
-    @ExceptionHandler({EntityNotFoundException.class})
-    void handleEntityNotFound(HttpServletResponse response) throws IOException {
-        response.sendError(HttpStatus.NOT_FOUND.value());
     }
 }
