@@ -48,7 +48,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
         }
         Sort sortByCreate = Sort.by(Sort.Direction.ASC, "created");
-        Pageable page = PageRequest.of(from/size, size, sortByCreate);
+        Pageable page = PageRequest.of(from / size, size, sortByCreate);
         return itemRequestRepository.findAll(page).getContent().stream()
                     .filter(i -> i.getReqOwnerId().getId() != userId)
                     .map(mapper::requestToDto)

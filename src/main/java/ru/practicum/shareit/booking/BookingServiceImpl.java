@@ -94,7 +94,7 @@ public class BookingServiceImpl implements BookingService {
         if (from < 0 || size <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
         }
-        Pageable page = PageRequest.of(from/size, size);
+        Pageable page = PageRequest.of(from / size, size);
         List<Booking> bookingList;
         switch (state) {
             case ("ALL"):
@@ -133,7 +133,7 @@ public class BookingServiceImpl implements BookingService {
         if (from < 0 || size <= 0) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
         }
-        Pageable page = PageRequest.of(from/size, size);
+        Pageable page = PageRequest.of(from / size, size);
         List<Booking> bookingList;
         List<Item> userItemList = itemRepository.findByUserIdContaining(userId);
         if (userItemList.size() < 1) {

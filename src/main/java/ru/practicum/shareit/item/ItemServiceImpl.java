@@ -55,7 +55,7 @@ public class ItemServiceImpl implements ItemService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
             }
             Sort sortById = Sort.by(Sort.Direction.ASC, "id");
-            Pageable page = PageRequest.of(from/size, size, sortById);
+            Pageable page = PageRequest.of(from / size, size, sortById);
             for (Item i : itemRepository.findAll(page).getContent()) {
                 if ((i.getName().toLowerCase().contains(text) || i.getDescription().toLowerCase().contains(text)) &&
                         i.getAvailable()) {
@@ -94,7 +94,7 @@ public class ItemServiceImpl implements ItemService {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Incorrect parameters FROM or SIZE!");
             }
             Sort sortById = Sort.by(Sort.Direction.ASC, "id");
-            Pageable page = PageRequest.of(from/size, size, sortById);
+            Pageable page = PageRequest.of(from / size, size, sortById);
             return itemRepository.findAll(page).getContent().stream()
                     .filter(i -> i.getOwner().getId() != userId)
                     .map(mapper::itemToDto)
