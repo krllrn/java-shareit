@@ -1,8 +1,9 @@
-package ru.practicum.shareit.booking;
+package ru.practicum.shareit.booking.model;
 
 import lombok.*;
+import ru.practicum.shareit.booking.BookingState;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -49,4 +50,14 @@ public class Booking {
     @Transient
     private String feedback;
 
+    public Booking(Item item, LocalDateTime start, LocalDateTime end, User booker, BookingState status, String bookingFromOwner, long itemOwnerId, String feedback) {
+        this.item = item;
+        this.start = start;
+        this.end = end;
+        this.booker = booker;
+        this.status = status;
+        this.bookingFromOwner = bookingFromOwner;
+        this.itemOwnerId = itemOwnerId;
+        this.feedback = feedback;
+    }
 }

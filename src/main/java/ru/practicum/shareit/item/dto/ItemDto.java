@@ -37,6 +37,8 @@ public class ItemDto {
 
     private List<Comment> comments;
 
+    private Long requestId;
+
     public ItemDto(String name, String description, Boolean available) {
         this.name = name;
         this.description = description;
