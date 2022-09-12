@@ -10,12 +10,12 @@ import java.util.List;
 @RepositoryRestResource
 public interface ItemRepository extends JpaRepository<Item, Long> {
 
-    @Query(value = "select * from items where owner_id = ?1", nativeQuery = true)
+    @Query(value = "select * from items where owner_id = ?1 order by id asc", nativeQuery = true)
     List<Item> findByUserIdContaining(Long userId);
 
-    @Query(value = "select * from items where request_id = ?1", nativeQuery = true)
+    @Query(value = "select * from items where request_id = ?1 order by id asc", nativeQuery = true)
     List<Item> findByRequestIdContaining(Long requestId);
 
-    @Query(value = "select * from items where id = ?1", nativeQuery = true)
+    @Query(value = "select * from items where id = ?1 order by id asc", nativeQuery = true)
     Item findByIdIs(Long itemId);
 }
