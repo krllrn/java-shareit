@@ -12,7 +12,6 @@ import ru.practicum.shareit.booking.dto.BookingState;
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
-import java.util.List;
 
 import static ru.practicum.shareit.ShareItGateway.USER_ID_HEADER_REQUEST;
 
