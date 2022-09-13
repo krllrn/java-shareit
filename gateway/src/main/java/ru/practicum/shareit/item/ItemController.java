@@ -28,15 +28,13 @@ public class ItemController {
                                            @PositiveOrZero @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
                                            @Positive @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
         log.info("Get items for USER_ID: {}; FROM: {}, SIZE: {}", userId, from, size);
-
         return itemClient.getItems(userId, from, size);
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<Object> getItemById(@PathVariable long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId) {
-        log.info("Get item with id: {}.", itemId);
-        log.info("USER_ID: {}", userId);
-
+    public ResponseEntity<Object> getItemById(@PathVariable long itemId,
+                                              @RequestHeader(USER_ID_HEADER_REQUEST) Long userId) {
+        log.info("Get item with id: {}. USER_ID: {}", itemId, userId);
         return itemClient.getItemById(itemId, userId);
     }
 
@@ -44,32 +42,28 @@ public class ItemController {
     public ResponseEntity<Object> search(@RequestParam String text,
                                 @RequestParam(value = "from", required = false, defaultValue = "0") Integer from,
                                 @RequestParam(value = "size", required = false, defaultValue = "10") Integer size) {
-        log.info("Get search with text: {}.", text);
-        log.info("FROM: {}, SIZE: {}", from, size);
-
+        log.info("Get search with text: {}. FROM: {}, SIZE: {}", text, from, size);
         return itemClient.search(text.toLowerCase(), from, size);
     }
 
     @PostMapping
     public ResponseEntity<Object> addItem(@RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
                            @Valid @RequestBody ItemDto itemDto) {
-        log.info("Add item. USER_ID: {}, ITEM_DTO: {}", userId, itemDto);
+        log.info("Add item with name: {}.", itemDto.getName());
         return itemClient.addItem(userId, itemDto);
     }
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> edit(@PathVariable Long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
                         @RequestBody ItemDto itemDto) {
-        log.info("Edit item with id: {}.", itemId);
-        log.info("USER_ID: {}. ITEM_DTO: {}.", userId, itemDto);
+        log.info("Edit item with id: {}. USER_ID: {}.", itemId, userId);
         return itemClient.edit(itemId, userId, itemDto);
     }
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> addComment(@PathVariable long itemId, @RequestHeader(USER_ID_HEADER_REQUEST) Long userId,
                               @Valid @RequestBody CommentDto comment) {
-        log.info("Add comment to item with id: {}.", itemId);
-        log.info("USER_ID: {}. COMMENT: {}.", userId, comment);
+        log.info("Add comment to item with id: {}. USER_ID: {}. COMMENT: {}.", itemId, userId, comment);
         return itemClient.addComment(itemId, userId, comment);
     }
 }

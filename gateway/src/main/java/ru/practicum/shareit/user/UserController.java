@@ -33,14 +33,13 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<Object> create(@Valid @RequestBody UserDto userDto) {
-        log.info("Create user with data: {}.", userDto);
+        log.info("Create new user with email: {}", userDto.getEmail());
         return userClient.create(userDto);
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<Object> updateValues(@PathVariable Long id, @RequestBody UserDto userDto) {
         log.info("Edit user with id: {}.", id);
-        log.info("Data to update: {}.", userDto);
         return userClient.updateValues(id, userDto);
     }
 
